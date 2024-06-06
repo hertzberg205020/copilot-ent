@@ -1,0 +1,94 @@
+{
+  "name": "copilotent",
+  "displayName": "CopilotEnt",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copilotext.addAskResponse",
+        "title": "🤖 ask copilot"
+      },
+      {
+        "command": "copilotext.checkcode",
+        "title": "🤖 Enterprise Copilot:🔎 Check Code"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "copilotext.checkcode",
+          "when": "editorHasSelection",
+          "group": "copilotext-menu-group@1"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "copilotext",
+          "title": "Enterprise Copilot",
+          "icon": "media/imgs/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "copilotext": [
+        {
+          "type": "webview",
+          "id": "copilotext.copilotView",
+          "name": "EnpterpriseCopilot"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "copilotext",
+      "properties": {
+        "copilotext.endpoint": {
+          "type": "string",
+          "default": "https://gcai03class.openai.azure.com/",
+          "description": "Your Azure OpenAI Endpoint",
+          "order": 0
+        },
+        "copilotext.api_key": {
+          "type": "string",
+          "default": "2c9f70a00d8742d4975e4766550430dc",
+          "description": "Your Azure OpenAI KEY",
+          "order": 1
+        },
+        "copilotext.chatgptmodel": {
+          "type": "string",
+          "default": "gpt-35-turbo",
+          "description": "Your ChatGPT Model",
+          "order": 2
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "node-api-dotnet": "file:../../out/pkg/node-api-dotnet"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.8"
+  }
+}

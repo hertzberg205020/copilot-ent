@@ -1,0 +1,108 @@
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: PR Verification
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Enable manually starting a build
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ windows-latest, macos-latest, ubuntu-latest ]
+        node-version: [ 18.x ]
+        configuration: [ Release ]
+      fail-fast: false  # Don't cancel other jobs when one job fails
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # Deep clone is required for versioning on git commit height
+
+    - name: Link libdl.so # Required by .NET 6
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo ln -s /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libdl.so
+
+    - name: Setup .NET 6
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Build ${{ matrix.configuration }}
+      run: dotnet build --configuration ${{ matrix.configuration }}
+
+    - name: Build packages
+      id: pack
+      run: dotnet pack --configuration ${{ matrix.configuration }}
+
+    # Uncomment to enable an SSH session for debugging
+    # - name: Setup tmate session
+    #  uses: mxschmitt/action-tmate@v3
+    #  with:
+    #      limit-access-to-actor: true
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.os }}-${{ matrix.configuration }}-packages
+        path: |
+          out/pkg/*.nupkg
+          out/pkg/*.tgz
+
+    - name: Test .NET 4.7.2
+      if: matrix.os == 'windows-latest' && steps.pack.conclusion == 'success' && !cancelled()
+      env:
+        TRACE_NODE_API_HOST: 1
+      run: >
+        dotnet test -f net472
+        --configuration ${{ matrix.configuration }}
+        --logger trx
+        --results-directory "out/test/netfx47-node${{ matrix.node-version }}-${{ matrix.configuration }}"
+
+    - name: Test .NET 6
+      if: steps.pack.conclusion == 'success' && !cancelled()
+      env:
+        TRACE_NODE_API_HOST: 1
+      run: >
+        dotnet test -f net6.0
+        --configuration ${{ matrix.configuration }}
+        --logger trx
+        --results-directory "out/test/dotnet6-node${{ matrix.node-version }}-${{ matrix.configuration }}"
+
+    - name: Test .NET 8
+      if: steps.pack.conclusion == 'success' && !cancelled()
+      env:
+        TRACE_NODE_API_HOST: 1
+      run: >
+        dotnet test -f net8.0
+        --configuration ${{ matrix.configuration }}
+        --logger trx
+        --results-directory "out/test/dotnet8-node${{ matrix.node-version }}-${{ matrix.configuration }}"
+
+    - name: Upload test logs
+      if: always() # Update artifacts regardless if code succeeded, failed, or cancelled
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-logs-${{ matrix.os }}-node${{ matrix.node-version }}-${{ matrix.configuration }}
+        path: |
+          out/obj/${{ matrix.configuration }}/**/*.log
+          out/obj/${{ matrix.configuration }}/**/*.rsp
+          out/test/**/*.trx
+
+    - name: Check formatting
+      if: ${{ !cancelled() }} # Run this step even when there are build failures but not when cancelled
+      run: dotnet format --no-restore --severity info --verbosity detailed --verify-no-changes

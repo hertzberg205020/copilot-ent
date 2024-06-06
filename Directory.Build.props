@@ -1,0 +1,55 @@
+<Project>
+  <PropertyGroup>
+    <TargetFrameworks Condition=" '$(TargetFrameworks)' == '' and ! $([MSBuild]::IsOsPlatform('Windows')) ">net8.0;net6.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(TargetFrameworks)' == '' and $([MSBuild]::IsOsPlatform('Windows')) ">net8.0;net6.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(PublishAot)' == 'true' ">net8.0</TargetFrameworks>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)out/</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)bin/$(Configuration)/$(MSBuildProjectName)/</OutputPath>
+    <PackageOutputPath>$(BaseOutputPath)pkg/</PackageOutputPath>
+    <SymbolsOutputPath>$(BaseOutputPath)sym/</SymbolsOutputPath>
+    <BaseIntermediateOutputPath>$(BaseOutputPath)obj/$(Configuration)/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <IsPackable>false</IsPackable>
+
+    <!-- Display each test case and passed/failed status when using `dotnet test`. -->
+    <VSTestLogger Condition="'$(VSTestLogger)' == ''">console%3Bverbosity=normal</VSTestLogger>
+
+    <!-- Suppress warnings about using a preview version of .NET. -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(PublishAot)' == 'true' ">
+    <!-- Modify the build output paths when publishing for AOT. This enables separately compiling
+         AOT and non-AOT flavors of the same project, which is necessary because .NET 8 blocks
+         dynamic code generation even in the managed assembly if AOT is enabled at compile time. -->
+    <OutputPath>$(BaseOutputPath)bin/$(Configuration)/$(MSBuildProjectName)/aot/</OutputPath>
+    <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath)aot/</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <StripSymbols>true</StripSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Nuget metadata">
+    <Authors>Microsoft</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/node-api-dotnet</PackageProjectUrl>
+    <Description>Node-API bindings for .Net</Description>
+    <PackageTags>Node-API;NAPI;Node.JS;JavaScript</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <NetFramework>true</NetFramework>
+    <DefineConstants>$(DefineConstants);NETFRAMEWORK</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net472' ">
+    <NetFramework>false</NetFramework>
+  </PropertyGroup>
+
+  <Import Project="./rid.props" />
+</Project>

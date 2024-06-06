@@ -1,0 +1,85 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "build",
+                "--nologo",
+                "--property:GenerateFullPaths=true",
+                "--consoleloggerparameters:NoSummary"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "test",
+                "--nologo"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+          },
+          {
+            "label": "bench",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "run",
+                "-c",
+                "Release",
+                "-f",
+                "net8.0",
+                "--",
+                "--filter",
+                "*.NonAot.*"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/bench"
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+          "label": "bench AOT",
+          "command": "dotnet",
+          "type": "shell",
+          "args": [
+              "run",
+              "-c",
+              "Release",
+              "-f",
+              "net8.0",
+              "--",
+              "--filter",
+              "*.Aot.*"
+          ],
+          "options": {
+              "cwd": "${workspaceFolder}/bench"
+          },
+          "presentation": {
+              "reveal": "always"
+          },
+          "problemMatcher": "$msCompile"
+      }
+  ]
+}

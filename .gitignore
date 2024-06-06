@@ -1,0 +1,17 @@
+out/
+bin/
+obj/
+pkg/
+
+*.suo
+*.user
+
+.vs/
+
+node_modules/
+examples/**/package-lock.json
+
+/src/**/*.xml
+
+*.log
+*.binlog

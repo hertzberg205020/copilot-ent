@@ -1,0 +1,34 @@
+<Project>
+    <Import Project="../../Directory.Build.props" />
+
+    <PropertyGroup>
+        <BaseIntermediateOutputPath>$(BaseOutputPath)obj/$(Configuration)/TestCases/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+        <OutputPath>$(BaseOutputPath)bin/$(Configuration)/TestCases/$(MSBuildProjectName)/</OutputPath>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>CS1591</NoWarn>
+
+        <!-- Always write *.NodeApi.g.cs in the obj/ directory. -->
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+      <PublishAot>true</PublishAot>
+      <StripSymbols>true</StripSymbols>
+      <PublishNodeModule>true</PublishNodeModule>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <NodeApiSrcDir>$(MSBuildThisFileDirectory)..\..\src\</NodeApiSrcDir>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="$(NodeApiSrcDir)NodeApi\NodeApi.csproj" />
+        <ProjectReference Include="$(NodeApiSrcDir)NodeApi.DotNetHost\NodeApi.DotNetHost.csproj" />
+        <PackageReference Include="Microsoft.JavaScript.NodeApi.Generator" VersionOverride="0.4.*-*" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- Use a local nuget package cache folder that is easy to wipe when testing. -->
+      <RestorePackagesPath>$(MSBuildThisFileDirectory)..\..\out\pkg</RestorePackagesPath>
+    </PropertyGroup>
+  </Project>
